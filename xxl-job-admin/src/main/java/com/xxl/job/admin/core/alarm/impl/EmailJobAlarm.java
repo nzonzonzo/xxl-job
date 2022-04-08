@@ -17,6 +17,8 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * job alarm by email
@@ -27,6 +29,7 @@ import java.util.Set;
 public class EmailJobAlarm implements JobAlarm {
     private static Logger logger = LoggerFactory.getLogger(EmailJobAlarm.class);
 
+    private static Pattern patten = Pattern.compile("[\\w\\.\\-]+@([\\w\\-]+\\.)+[\\w\\-]+");
     /**
      * fail alarm
      *
@@ -62,6 +65,11 @@ public class EmailJobAlarm implements JobAlarm {
 
                 // make mail
                 try {
+                    Matcher matcher = patten.matcher(email);
+                    if (!matcher.matches()){
+                        logger.info(">>>>>>>>>>> xxl-job, job fail alarm email {} send error, JobLogId:{}", email, jobLog.getId());
+                        continue;
+                    }
                     MimeMessage mimeMessage = XxlJobAdminConfig.getAdminConfig().getMailSender().createMimeMessage();
 
                     MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -82,6 +90,7 @@ public class EmailJobAlarm implements JobAlarm {
 
         return alarmResult;
     }
+
 
     /**
      * load email job alarm template
